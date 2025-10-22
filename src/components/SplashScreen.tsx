@@ -22,7 +22,7 @@ const SplashScreen = () => {
         className="z-10 mb-8"
       >
         <motion.img
-          src="/ACM_LOGO.png"
+          src="./ACM_LOGO.png"
           alt="ACM KARE Logo"
           className="w-48 h-48 md:w-64 md:h-64"
           style={{
