@@ -168,6 +168,7 @@ const Login = () => {
             type="button"
             onClick={async () => {
               try {
+                setLoading(true);
                 const result = await signInWithPopup(auth, googleProvider);
                 const email = result.user.email;
                 
@@ -185,10 +186,20 @@ const Login = () => {
                   navigate('/register');
                 }
               } catch (error: any) {
+                console.error('Google Sign-in Error:', error);
                 if (error.code === 'auth/popup-closed-by-user') {
                   return;
                 }
+                if (error.code === 'auth/popup-blocked') {
+                  toast.error('Pop-up was blocked. Please allow pop-ups for this site.');
+                  return;
+                }
+                if (error.code === 'auth/cancelled-popup-request') {
+                  return;
+                }
                 toast.error('Google sign-in failed. Please try again.');
+              } finally {
+                setLoading(false);
               }
             }}
             className="w-full flex items-center justify-center gap-2 glow-btn bg-gradient-to-r from-blue-600/80 to-cyan-600/80 hover:from-blue-500/80 hover:to-cyan-500/80 transition-all duration-300"
