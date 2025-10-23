@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider } from '../firebase.ts';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 

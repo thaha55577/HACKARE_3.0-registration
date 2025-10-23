@@ -7,6 +7,7 @@ import SplashScreen from './components/SplashScreen';
 import Login from './components/Login';
 import RegistrationForm from './components/RegistrationForm';
 import AdminDashboard from './components/AdminDashboard';
+import TeamDetail from './components/TeamDetail';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -30,6 +31,14 @@ function App() {
             element={
               <ProtectedRoute adminOnly={true}>
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/team/:teamName"
+            element={
+              <ProtectedRoute adminOnly={true}>
+                <TeamDetail />
               </ProtectedRoute>
             }
           />

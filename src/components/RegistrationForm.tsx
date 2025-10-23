@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { ref, set } from 'firebase/database';
-import { db } from '../firebase';
+import { db } from '../firebase.ts';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { signOut } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth } from '../firebase.ts';
 import { useNavigate } from 'react-router-dom';
 
 interface Member {
@@ -12,6 +12,11 @@ interface Member {
   regNo: string;
   year: string;
   dept: string;
+  residenceType?: 'Day Scholar' | 'Hosteller';
+  hostelName?: string;
+  roomNumber?: string;
+  wardenName?: string;
+  wardenPhone?: string;
 }
 
 const RegistrationForm = () => {
@@ -24,6 +29,11 @@ const RegistrationForm = () => {
     regNo: '',
     year: '',
     dept: '',
+    residenceType: 'Day Scholar',
+    hostelName: '',
+    roomNumber: '',
+    wardenName: '',
+    wardenPhone: '',
   });
 
   const [member1, setMember1] = useState<Member>({
@@ -31,13 +41,24 @@ const RegistrationForm = () => {
     regNo: '',
     year: '',
     dept: '',
+    residenceType: 'Day Scholar',
+    hostelName: '',
+    roomNumber: '',
+    wardenName: '',
+    wardenPhone: '',
   });
+
 
   const [member2, setMember2] = useState<Member>({
     name: '',
     regNo: '',
     year: '',
     dept: '',
+    residenceType: 'Day Scholar',
+    hostelName: '',
+    roomNumber: '',
+    wardenName: '',
+    wardenPhone: '',
   });
 
   const [member3, setMember3] = useState<Member>({
@@ -45,6 +66,11 @@ const RegistrationForm = () => {
     regNo: '',
     year: '',
     dept: '',
+    residenceType: 'Day Scholar',
+    hostelName: '',
+    roomNumber: '',
+    wardenName: '',
+    wardenPhone: '',
   });
 
   const [member4, setMember4] = useState<Member>({
@@ -52,6 +78,11 @@ const RegistrationForm = () => {
     regNo: '',
     year: '',
     dept: '',
+    residenceType: 'Day Scholar',
+    hostelName: '',
+    roomNumber: '',
+    wardenName: '',
+    wardenPhone: '',
   });
 
   const handleMemberChange = (
@@ -84,27 +115,66 @@ const RegistrationForm = () => {
 
     for (let i = 0; i < members.length; i++) {
       const member = members[i];
+      // Member 4 is optional: index 4 corresponds to member4
+      if (i === 4) {
+        // if all fields empty, skip validation for member4
+        if (!member.name && !member.regNo && !member.year && !member.dept) {
+          continue;
+        }
+      }
+
       if (!member.name || !member.regNo || !member.year || !member.dept) {
         toast.error(`Please fill all fields for ${i === 0 ? 'Team Leader' : `Member ${i}`}`);
         return;
       }
     }
 
+    // Validate per-member hostel details for members who selected Hosteller
+    for (let i = 0; i < members.length; i++) {
+      const m = members[i];
+      if (m.residenceType === 'Hosteller') {
+        if (!m.hostelName || !m.roomNumber || !m.wardenName || !m.wardenPhone) {
+          toast.error(`Please fill all hostel fields for ${i === 0 ? 'Team Leader' : `Member ${i}`}`);
+          return;
+        }
+      }
+    }
+
     setLoading(true);
 
     try {
-      await set(ref(db, 'teams/' + teamName), {
-        members: members,
-      });
+      // Remove empty member4 if all fields empty
+      let finalMembers = members;
+      if (!members[4].name && !members[4].regNo && !members[4].year && !members[4].dept) {
+        finalMembers = members.slice(0, 4);
+      }
+
+      const payload: any = {
+        members: finalMembers,
+      };
+
+      await set(ref(db, 'teams/' + teamName), payload);
 
       toast.success('Team Registered Successfully!');
 
       setTeamName('');
-      setLeader({ name: '', regNo: '', year: '', dept: '' });
-      setMember1({ name: '', regNo: '', year: '', dept: '' });
-      setMember2({ name: '', regNo: '', year: '', dept: '' });
-      setMember3({ name: '', regNo: '', year: '', dept: '' });
-      setMember4({ name: '', regNo: '', year: '', dept: '' });
+      const emptyMember: Member = {
+        name: '',
+        regNo: '',
+        year: '',
+        dept: '',
+        residenceType: 'Day Scholar',
+        hostelName: '',
+        roomNumber: '',
+        wardenName: '',
+        wardenPhone: '',
+      };
+
+      setLeader(emptyMember);
+      setMember1(emptyMember);
+      setMember2(emptyMember);
+      setMember3(emptyMember);
+      setMember4(emptyMember);
     } catch (error) {
       toast.error('Registration failed. Please try again.');
     } finally {
@@ -154,7 +224,60 @@ const RegistrationForm = () => {
           onChange={(e) => handleMemberChange(setter, 'dept', e.target.value)}
           required
         />
+        {/* Residence dropdown */}
+        <select
+          className="glow-input"
+          value={member.residenceType}
+          onChange={(e) => handleMemberChange(setter, 'residenceType', e.target.value)}
+        >
+          <option value="Day Scholar">Day Scholar</option>
+          <option value="Hosteller">Hosteller</option>
+        </select>
       </div>
+
+      {member.residenceType === 'Hosteller' && (
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="mt-4 p-4 border border-cyan-500/30 rounded-lg"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Hostel Name"
+              className="glow-input"
+              value={member.hostelName}
+              onChange={(e) => handleMemberChange(setter, 'hostelName', e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Room Number"
+              className="glow-input"
+              value={member.roomNumber}
+              onChange={(e) => handleMemberChange(setter, 'roomNumber', e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Warden Name"
+              className="glow-input"
+              value={member.wardenName}
+              onChange={(e) => handleMemberChange(setter, 'wardenName', e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Warden Phone Number"
+              className="glow-input"
+              value={member.wardenPhone}
+              onChange={(e) => handleMemberChange(setter, 'wardenPhone', e.target.value)}
+              required
+            />
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 
@@ -191,6 +314,8 @@ const RegistrationForm = () => {
             {renderMemberFields(member2, setMember2, 'Member 2')}
             {renderMemberFields(member3, setMember3, 'Member 3')}
             {renderMemberFields(member4, setMember4, 'Member 4')}
+
+            {/* global residence UI removed - per-member residence dropdowns are used instead */}
           </div>
 
           <button type="submit" className="glow-btn w-full mt-4" disabled={loading}>
